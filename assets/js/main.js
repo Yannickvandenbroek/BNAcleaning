@@ -61,10 +61,12 @@ function initCinematic() {
   const fill = section.querySelector(".cin-progress .fill");
   const images = [];
   let firstDrawn = false;
+  let loaded = 0;
   for (let i = 0; i < N; i++) {
     const img = new Image();
     img.src = cfg.framePath(i + 1);
-    img.onload = () => { if (!firstDrawn) { firstDrawn = true; draw(1); } };
+    img.onload = () => { loaded++; if (!firstDrawn) { firstDrawn = true; draw(1); } };
+    img.onerror = () => { loaded++; };
     images[i] = img;
   }
   let current = -1;
@@ -119,7 +121,49 @@ function initCinematic() {
   }
   window.addEventListener("resize", resize);
   resize();
-  return { update };
+  return { update, getLoaded: () => loaded, total: N };
+}
+
+/* ---------- preloader (laadt zware media vooraf, à la Café de Mert) ---------- */
+function setupPreloader(cinematic, lenis) {
+  const pre = document.getElementById("preloader");
+  if (!pre) return;
+  document.body.classList.add("preloading");
+  if (lenis) lenis.stop();
+  const fill = pre.querySelector(".pre-fill");
+  const pct = pre.querySelector(".pre-pct");
+  const vid = document.querySelector(".hero-video video");
+  let videoReady = !vid;
+  if (vid) {
+    if (vid.readyState >= 2) videoReady = true;
+    ["loadeddata", "canplay", "canplaythrough"].forEach((ev) =>
+      vid.addEventListener(ev, () => { videoReady = true; }, { once: true })
+    );
+  }
+  const start = performance.now();
+  const MAX = 7000;
+  let done = false;
+  function finish() {
+    if (done) return;
+    done = true;
+    if (fill) fill.style.width = "100%";
+    if (pct) pct.textContent = "100%";
+    pre.classList.add("done");
+    document.body.classList.remove("preloading");
+    if (lenis) lenis.start();
+    setTimeout(() => pre.remove(), 700);
+  }
+  function tick(now) {
+    const frac = cinematic ? Math.min(1, cinematic.getLoaded() / cinematic.total) : 1;
+    const prog = Math.min(1, frac * 0.9 + (videoReady ? 0.1 : 0));
+    const shown = Math.round(prog * 100);
+    if (fill) fill.style.width = shown + "%";
+    if (pct) pct.textContent = shown + "%";
+    if (prog >= 1 || now - start > MAX) { finish(); return; }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  setTimeout(finish, MAX + 400); // failsafe: nooit blijven hangen
 }
 
 /* ---------- parallax (foto's bewegen mee op scroll) ---------- */
@@ -198,6 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
     lenis = new Lenis({ lerp: 0.09, smoothWheel: true });
     window.__lenis = lenis;
   }
+  setupPreloader(cinematic, lenis);
   function raf(t) {
     if (lenis) lenis.raf(t);
     if (cinematic) cinematic.update();

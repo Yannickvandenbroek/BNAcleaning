@@ -96,6 +96,22 @@ p{margin:0 0 1em}
 .blob.b3{width:300px;height:300px;top:30%;right:8%;opacity:.32;animation-delay:-3s}
 @keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-30px) scale(1.08)}}
 
+/* ---------- preloader ---------- */
+#preloader{
+  position:fixed;inset:0;z-index:9999;display:grid;place-items:center;
+  background:radial-gradient(130% 130% at 50% 25%, #ffffff 0%, #eaf6f9 55%, #d8eef3 100%);
+  transition:opacity .6s ease, visibility .6s ease;
+}
+#preloader.done{opacity:0;visibility:hidden;pointer-events:none}
+body.preloading{overflow:hidden}
+.pre-inner{display:flex;flex-direction:column;align-items:center;gap:22px;width:min(320px,78vw);text-align:center}
+.pre-logo{width:132px;height:auto;animation:prePulse 1.9s ease-in-out infinite}
+@keyframes prePulse{0%,100%{transform:translateY(0) scale(1);opacity:.9}50%{transform:translateY(-7px) scale(1.04);opacity:1}}
+.pre-bar{width:100%;height:6px;border-radius:100px;background:#cfe6ed;overflow:hidden}
+.pre-fill{display:block;height:100%;width:0;border-radius:100px;background:var(--grad);transition:width .3s ease}
+.pre-pct{font-family:var(--fd);font-weight:800;color:var(--navy);font-size:1.05rem}
+.pre-tag{font-family:var(--fd);font-weight:600;font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--teal-700)}
+
 /* ---------- navbar ---------- */
 .nav{
   position:fixed;top:0;left:0;right:0;height:var(--nav-h);z-index:100;
