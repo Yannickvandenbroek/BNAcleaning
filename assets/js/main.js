@@ -230,6 +230,128 @@ function setupMasonry() {
   layoutMasonry();
 }
 
+/* ---------- voor/na: schuif over de foto ---------- */
+function setupBeforeAfter() {
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.querySelectorAll("[data-ba]").forEach((ba) => {
+    const input = ba.querySelector("input");
+    const set = (v) => {
+      const pos = Math.max(0, Math.min(100, v));
+      ba.style.setProperty("--pos", pos + "%");
+      input.value = pos;
+    };
+    let touched = false;
+    const fromEvent = (e) => {
+      const r = ba.getBoundingClientRect();
+      set(((e.clientX - r.left) / r.width) * 100);
+    };
+    ba.addEventListener("pointerdown", (e) => {
+      touched = true;
+      ba.setPointerCapture(e.pointerId);
+      ba.classList.add("drag");
+      fromEvent(e);
+    });
+    ba.addEventListener("pointermove", (e) => { if (ba.classList.contains("drag")) fromEvent(e); });
+    const stop = () => ba.classList.remove("drag");
+    ba.addEventListener("pointerup", stop);
+    ba.addEventListener("pointercancel", stop);
+    input.addEventListener("input", () => { touched = true; set(+input.value); });
+
+    // eenmalig even heen en weer als hij in beeld komt
+    if (reduce) return;
+    const io = new IntersectionObserver((entries) => {
+      if (!entries[0].isIntersecting) return;
+      io.disconnect();
+      const t0 = performance.now(), dur = 1500;
+      (function step(t) {
+        if (touched) return;
+        const k = Math.min((t - t0) / dur, 1);
+        set(50 + Math.sin(k * Math.PI * 2) * 26 * (1 - k));
+        if (k < 1) requestAnimationFrame(step);
+      })(t0);
+    }, { threshold: 0.45 });
+    io.observe(ba);
+  });
+}
+
+/* ---------- voor/na: twee panelen, aangewezen paneel groeit ---------- */
+function setupDuo() {
+  document.querySelectorAll("[data-duo]").forEach((duo) => {
+    const panels = [...duo.querySelectorAll(".duo-p")];
+    const pick = (p) => panels.forEach((x) => x.classList.toggle("on", x === p));
+    panels.forEach((p) => {
+      p.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") pick(p); });
+      p.addEventListener("click", () => pick(p));
+      p.addEventListener("focus", () => pick(p));
+    });
+  });
+}
+
+/* ---------- galerij-filter ---------- */
+function setupProjectFilter() {
+  const buttons = document.querySelectorAll("[data-filter]");
+  const cells = document.querySelectorAll(".pj-cell");
+  buttons.forEach((b) => b.addEventListener("click", () => {
+    buttons.forEach((x) => x.classList.toggle("on", x === b));
+    const f = b.dataset.filter;
+    b.closest("section").querySelector(".pj-grid").classList.toggle("filtered", f !== "alle");
+    cells.forEach((c) => {
+      c.hidden = f !== "alle" && c.dataset.cat !== f;
+      if (!c.hidden) c.classList.add("in");
+    });
+  }));
+}
+
+/* ---------- lightbox ---------- */
+function setupLightbox(lenis) {
+  const links = [...document.querySelectorAll("[data-lb]")];
+  if (!links.length) return;
+  const lb = document.createElement("div");
+  lb.className = "lb";
+  lb.setAttribute("role", "dialog");
+  lb.setAttribute("aria-modal", "true");
+  lb.setAttribute("aria-label", "Foto groot bekijken");
+  lb.innerHTML = '<figure><img alt="" /><figcaption></figcaption></figure>' +
+    '<button type="button" class="lb-x" aria-label="Sluiten">×</button>' +
+    '<button type="button" class="lb-p" aria-label="Vorige foto">‹</button>' +
+    '<button type="button" class="lb-n" aria-label="Volgende foto">›</button>';
+  document.body.appendChild(lb);
+  const img = lb.querySelector("img"), cap = lb.querySelector("figcaption");
+  let list = [], i = 0, last = null;
+  const show = () => {
+    const a = list[i];
+    img.src = a.getAttribute("href");
+    img.alt = a.dataset.cap || "";
+    cap.textContent = a.dataset.cap || "";
+  };
+  const close = () => {
+    lb.classList.remove("open");
+    if (lenis) lenis.start();
+    if (last) last.focus();
+  };
+  const step = (d) => { i = (i + d + list.length) % list.length; show(); };
+  links.forEach((a) => a.addEventListener("click", (e) => {
+    e.preventDefault();
+    list = links.filter((x) => x.offsetParent !== null);
+    i = list.indexOf(a);
+    last = a;
+    show();
+    lb.classList.add("open");
+    if (lenis) lenis.stop();
+    lb.querySelector(".lb-x").focus();
+  }));
+  lb.querySelector(".lb-x").addEventListener("click", close);
+  lb.querySelector(".lb-p").addEventListener("click", () => step(-1));
+  lb.querySelector(".lb-n").addEventListener("click", () => step(1));
+  lb.addEventListener("click", (e) => { if (e.target === lb) close(); });
+  document.addEventListener("keydown", (e) => {
+    if (!lb.classList.contains("open")) return;
+    if (e.key === "Escape") close();
+    if (e.key === "ArrowLeft") step(-1);
+    if (e.key === "ArrowRight") step(1);
+  });
+}
+
 /* ---------- boot ---------- */
 document.addEventListener("DOMContentLoaded", () => {
   const cinematic = initCinematic();
@@ -243,6 +365,10 @@ document.addEventListener("DOMContentLoaded", () => {
     window.__lenis = lenis;
   }
   setupPreloader(cinematic, lenis);
+  setupBeforeAfter();
+  setupDuo();
+  setupProjectFilter();
+  setupLightbox(lenis);
   function raf(t) {
     if (lenis) lenis.raf(t);
     if (cinematic) cinematic.update();
