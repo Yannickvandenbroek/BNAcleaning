@@ -236,6 +236,9 @@ body.preloading{overflow:hidden}
 .hq-btn{width:100%;justify-content:center;position:relative;z-index:2}
 .hq-btn svg{width:17px;height:17px}
 .hero-quote .form-note{margin:12px 0 0;font-size:.85rem;font-weight:600;color:#eafcff;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.32);border-radius:12px;padding:10px 12px;position:relative;z-index:2}
+.form-error{margin:16px 0 0;padding:14px 16px;background:#fdeeee;border:1px solid #f4c9c9;border-radius:14px;color:#a12a2a;font-weight:600}
+.hero-quote .form-error{margin:12px 0 0;font-size:.85rem;border-radius:12px;padding:10px 12px;position:relative;z-index:2}
+.btn:disabled{opacity:.7;cursor:wait;transform:none}
 
 .scroll-cue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;color:#fff;font-family:var(--fd);font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;opacity:.85;display:flex;flex-direction:column;align-items:center;gap:8px}
 .scroll-cue .mouse{width:24px;height:38px;border:2px solid rgba(255,255,255,.7);border-radius:14px;position:relative}

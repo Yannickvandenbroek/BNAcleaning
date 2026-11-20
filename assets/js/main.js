@@ -401,13 +401,32 @@ document.addEventListener("DOMContentLoaded", () => {
   // year
   document.querySelectorAll("[data-year]").forEach((el) => (el.textContent = new Date().getFullYear()));
 
-  // contact form (demo)
-  document.querySelectorAll("form[data-demo]").forEach((form) => {
-    form.addEventListener("submit", (e) => {
+  // offerteformulieren (Formspree)
+  document.querySelectorAll("form[data-form]").forEach((form) => {
+    const note = form.querySelector(".form-note");
+    const error = form.querySelector(".form-error");
+    const btn = form.querySelector('button[type="submit"]');
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const note = form.querySelector(".form-note");
-      if (note) { note.hidden = false; }
-      form.reset();
+      const label = btn.innerHTML;
+      note.hidden = true;
+      error.hidden = true;
+      btn.disabled = true;
+      btn.textContent = "Bezig met versturen...";
+      try {
+        const res = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: { Accept: "application/json" },
+        });
+        if (!res.ok) throw new Error(res.status);
+        note.hidden = false;
+        form.reset();
+      } catch (err) {
+        error.hidden = false;
+      }
+      btn.disabled = false;
+      btn.innerHTML = label;
     });
   });
 });

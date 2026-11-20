@@ -69,7 +69,9 @@
       </div>
 
       <div class="reveal-r">
-        <form class="form" data-demo>
+        <form class="form" action="https://formspree.io/f/xzeewagn" method="POST" data-form>
+          <input type="hidden" name="_subject" value="Nieuwe offerte-aanvraag via de contactpagina" />
+          <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none" />
           <h3 style="margin-bottom:6px">Vraag een offerte aan</h3>
           <p class="muted" style="font-size:.95rem;margin-bottom:22px">Vul uw gegevens in, dan nemen we snel contact met u op.</p>
           <div class="row-2">
@@ -88,7 +90,8 @@
           </div>
           <div class="field"><label for="bericht">Bericht</label><textarea id="bericht" name="bericht" placeholder="Vertel ons kort over uw situatie..."></textarea></div>
           <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">Verstuur aanvraag</button>
-          <p class="form-note" hidden style="margin:16px 0 0;padding:14px 16px;background:var(--mist);border:1px solid #cfeaf0;border-radius:14px;color:var(--teal-700);font-weight:600">✓ Bedankt! Uw aanvraag is verzonden. We nemen snel contact met u op.</p>
+          <p class="form-note" role="status" hidden style="margin:16px 0 0;padding:14px 16px;background:var(--mist);border:1px solid #cfeaf0;border-radius:14px;color:var(--teal-700);font-weight:600">✓ Bedankt! Uw aanvraag is verzonden. We nemen snel contact met u op.</p>
+          <p class="form-error" role="alert" hidden>Versturen is niet gelukt. Probeer het opnieuw of bel 06 - 42332324.</p>
         </form>
       </div>
     </div>
